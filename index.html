@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>都道府県ごとの天気予報</title>
+</head>
+<body>
+
+<h1>都道府県ごとの天気予報</h1>
+
+<!-- ユーザーが都道府県を選択できるフォーム -->
+<label for="prefecture">都道府県を選択:</label>
+<select id="prefecture">
+    <option value="Hokkaido">北海道</option>
+    <option value="Aomori">青森</option>
+    <option value="Iwate">岩手</option>
+    <option value="Miyagi">宮城</option>
+    <option value="Akita">秋田</option>
+    <option value="Yamagata">山形</option>
+    <option value="Fukushima">福島</option>
+    <option value="Ibaraki">茨城</option>
+    <option value="Tochigi">栃木</option>
+    <option value="Gunma">群馬</option>
+    <option value="Saitama">埼玉</option>
+    <option value="Chiba">千葉</option>
+    <option value="Tokyo">東京</option>
+    <option value="Kanagawa">神奈川</option>
+    <option value="Niigata">新潟</option>
+    <option value="Toyama">富山</option>
+    <option value="Ishikawa">石川</option>
+    <option value="Fukui">福井</option>
+    <option value="Yamanashi">山梨</option>
+    <option value="Nagano">長野</option>
+    <option value="Gifu">岐阜</option>
+    <option value="Shizuoka">静岡</option>
+    <option value="Aichi">愛知</option>
+    <option value="Mie">三重</option>
+    <option value="Shiga">滋賀</option>
+    <option value="Kyoto">京都</option>
+    <option value="Osaka">大阪</option>
+    <option value="Hyogo">兵庫</option>
+    <option value="Nara">奈良</option>
+    <option value="Wakayama">和歌山</option>
+    <option value="Tottori">鳥取</option>
+    <option value="Shimane">島根</option>
+    <option value="Okayama">岡山</option>
+    <option value="Hiroshima">広島</option>
+    <option value="Yamaguchi">山口</option>
+    <option value="Tokushima">徳島</option>
+    <option value="Kagawa">香川</option>
+    <option value="Ehime">愛媛</option>
+    <option value="Kochi">高知</option>
+    <option value="Fukuoka">福岡</option>
+    <option value="Saga">佐賀</option>
+    <option value="Nagasaki">長崎</option>
+    <option value="Kumamoto">熊本</option>
+    <option value="Oita">大分</option>
+    <option value="Miyazaki">宮崎</option>
+    <option value="Kagoshima">鹿児島</option>
+    <option value="Okinawa">沖縄</option>
+    <!-- 他の都道府県を追加 -->
+</select>
+<button onclick="getWeather()">天気予報を取得</button>
+
+<!-- 天気予報結果を表示するための要素 -->
+<div id="weather-result"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+const cityJapaneseMap = {
+    "Hokkaido": "北海道",
+        "Aomori": "青森",
+        "Iwate": "岩手",
+        "Miyagi": "宮城",
+        "Akita": "秋田",
+        "Yamagata": "山形",
+        "Fukushima": "福島",
+        "Ibaraki": "茨城",
+        "Tochigi": "栃木",
+        "Gunma": "群馬",
+        "Saitama": "埼玉",
+        "Chiba": "千葉",
+        "Tokyo": "東京",
+        "Kanagawa": "神奈川",
+        "Niigata": "新潟",
+        "Toyama": "富山",
+        "Ishikawa": "石川",
+        "Fukui": "福井",
+        "Yamanashi": "山梨",
+        "Nagano": "長野",
+        "Gifu": "岐阜",
+        "Shizuoka": "静岡",
+        "Aichi": "愛知",
+        "Mie": "三重",
+        "Shiga": "滋賀",
+        "Kyoto": "京都",
+        "Osaka": "大阪",
+        "Hyogo": "兵庫",
+        "Nara": "奈良",
+        "Wakayama": "和歌山",
+        "Tottori": "鳥取",
+        "Shimane": "島根",
+        "Okayama": "岡山",
+        "Hiroshima": "広島",
+        "Yamaguchi": "山口",
+        "Tokushima": "徳島",
+        "Kagawa": "香川",
+        "Ehime": "愛媛",
+        "Kochi": "高知",
+        "Fukuoka": "福岡",
+        "Saga": "佐賀",
+        "Nagasaki": "長崎",
+        "Kumamoto": "熊本",
+        "Oita": "大分",
+        "Miyazaki": "宮崎",
+        "Kagoshima": "鹿児島",
+        "Okinawa": "沖縄"
+    };
+    const weatherEnglishToJapanese = {
+    "Clear": "晴れ",
+    "Clouds": "曇り",
+    "Rain": "雨",
+    "Snow": "雪",
+    "Thunderstorm": "雷雨",
+    "Mist": "霧",
+    "Drizzle": "霧雨",
+    "Fog": "濃霧",
+    "Haze": "もや",
+    "Smoke": "煙",
+    "Dust": "ほこり",
+    "Sand": "砂",
+    "Ash": "火山灰",
+    "Squall": "スコール",
+    "Tornado": "竜巻"
+};
+
+    function getWeather() {
+        const selectedPrefecture = document.getElementById('prefecture').value;
+
+        // OpenWeatherMap APIに現在の天気をリクエストするための関数
+        const apiKey = "c654bb4047aad7d9674c8ba6a88f871f";
+        const baseUrl = "http://api.openweathermap.org/data/2.5/weather";
+        const params = {
+            q: selectedPrefecture,
+            appid: apiKey,
+            lang: "ja",
+            units: "metric",
+        };
+
+        axios.get(baseUrl, { params })
+            .then(response => {
+                // APIレスポンスから現在の天気データを取得
+                const weatherData = response.data;
+                const resultDiv = document.getElementById('weather-result');
+
+                // 天気情報を表示
+                const mainWeather = weatherData.weather[0].main;
+                const description = weatherData.weather[0].description;
+                const temperature = weatherData.main.temp;
+                const humidity = weatherData.main.humidity;
+                const roundedWindSpeed = weatherData.wind.speed;
+                const windDirection = weatherData.wind.deg;
+                const pressure = weatherData.main.pressure;
+                const visibility = weatherData.visibility;
+                const sunrise = new Date(weatherData.sys.sunrise * 1000);
+                const sunset = new Date(weatherData.sys.sunset * 1000);
+
+                const roundedTemperature = temperature.toFixed(1);
+                    console.log(`${mainWeather}`,"天気");
+
+                const japanesePrefecture = cityJapaneseMap[selectedPrefecture];
+                const weatherJapanese = weatherEnglishToJapanese[mainWeather];
+                resultDiv.innerHTML = `
+                    <p>${japanesePrefecture}の現在の天気: ${weatherJapanese} - ${description}</p>
+                    <p>気温: ${roundedTemperature}°C</p>
+                    <p>湿度: ${humidity}%</p>
+                    <p>風速: ${roundedWindSpeed} m/s (風向き: ${windDirection}°)</p>
+                    <p>気圧: ${pressure} hPa</p>
+                    <p>視程: ${visibility} m</p>
+                    <p>日の出: ${sunrise.toLocaleTimeString()}</p>
+                    <p>日の入り: ${sunset.toLocaleTimeString()}</p>
+                `;
+            })
+            .catch(error => {
+                console.error(`天気予報の取得に失敗しました。エラー: ${error.message}`);
+            });
+    }
+</script>
+
+</body>
+</html>
